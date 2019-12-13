@@ -50,6 +50,8 @@ public class Polynom implements Polynom_able {
 	 * @param s: is a string represents a Polynom
 	 */
 	public Polynom(String s) {
+		s = s.replace(" ", "");
+		
 		int n = 0;
 		String f = "";
 		if (s.charAt(0) == '-') {
@@ -119,7 +121,7 @@ public class Polynom implements Polynom_able {
 	public void add(Polynom_able p1) {
 		Polynom temp = new Polynom((Polynom) p1);
 		for (int i = 0; i < temp.PolArr.size(); i++) {
-			this.add(temp.PolArr.get(i));
+			this.add((Monom)temp.PolArr.get(i).copy());
 		}
 		//
 		this.PolArr.sort(C);
@@ -136,8 +138,9 @@ public class Polynom implements Polynom_able {
 
 	public void substract(Monom m1) {
 		Monom minus = new Monom(-1, 0);
-		m1.multipy(minus);
-		this.PolArr.add(m1);
+		Monom m1Copy = (Monom)m1.copy();
+		m1Copy.multipy(minus);
+		this.PolArr.add(m1Copy);
 		//
 		this.PolArr.sort(C);
 		this.SortByPower();
@@ -173,12 +176,26 @@ public class Polynom implements Polynom_able {
 		this.SortByPower();
 	}
 
-	public boolean equals(Polynom_able p1) {
-		this.substract(p1);
-		if (this.isZero()) {
-			return true;
+	
+	@Override
+	public boolean equals(Object o) {
+		if(o instanceof Polynom_able) {
+			Polynom_able objectPoly = (Polynom_able)o;
+			Polynom_able copyThis = copy();
+			copyThis.substract(objectPoly);
+			
+			return copyThis.isZero();
+			
+		} else {
+			if(o instanceof Monom) {
+				Monom oMonom = (Monom)o;
+				Polynom polyFromMonom = new Polynom();
+				polyFromMonom.add(oMonom);
+				return equals(polyFromMonom);
+			} else {
+				return false;
+			}
 		}
-		return false;
 	}
 
 	@Override
@@ -205,7 +222,6 @@ public class Polynom implements Polynom_able {
 			r = (x0+x1)/2; 
 
 			if (f(r) == 0.0) {
-				System.out.println("root is : " +r);
 				return r;}
 
 			else if (f(r)*f(x0) < 0) {
@@ -215,7 +231,6 @@ public class Polynom implements Polynom_able {
 			}
 		} 
 				
-		System.out.println("root is : " +r);
 	return r;
 	}
 
@@ -223,7 +238,7 @@ public class Polynom implements Polynom_able {
 	public Polynom_able copy() {
 		Polynom_able copy = new Polynom();
 		for (int i = 0; i < this.PolArr.size(); i++) {
-			copy.add(this.PolArr.get(i));
+			copy.add((Monom)this.PolArr.get(i).copy());
 		}
 		return copy;
 	}
@@ -240,16 +255,21 @@ public class Polynom implements Polynom_able {
 	public double area(double x0, double x1, double eps) {
 		double res = 0;
 		for (; x0 < x1; x0 += eps) {
-			res += ((f(x0) + f(x0 + eps)) / 2) * eps;
+			res += Math.abs(f(x0) * eps);
 		}
 		return res;
 	}
 
 	@Override
 	public void multiply(Monom m1) {
-		for (int i = 0; i < this.PolArr.size(); i++) {
-			this.PolArr.get(i).multipy(m1);
+		ArrayList<Monom> newMonomList = new ArrayList<>();
+		
+		for(int i = 0; i < this.PolArr.size(); i++) {
+			newMonomList.add((Monom)this.PolArr.get(i).copy());
+			newMonomList.get(i).multipy(m1);
 		}
+		
+		this.PolArr = newMonomList;
 	}
 
 	@Override

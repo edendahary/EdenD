@@ -5,8 +5,15 @@ public class ComplexFunction implements complex_function {
 	private function f1, f2;
 	private Operation op;
 	public ComplexFunction(){
-		return;
+		
 	}
+	
+	public ComplexFunction(function f1) {
+		this.f1 = f1;
+		this.f2 = null;
+		this.op = Operation.None;
+	}
+	
 	public ComplexFunction(function f1, function f2, Operation op) {
 		this.f1 = f1;
 		this.f2 = f2;
@@ -15,6 +22,8 @@ public class ComplexFunction implements complex_function {
 // 	plus(x, x^2 + 3)
 	public ComplexFunction(String opString,function f1, function f2) {
 		this.op = operationStringToOperation(opString);
+		this.f1 = f1;
+		this.f2 = f2;
 	}
 	@Override
 	public double f(double x) {
@@ -51,36 +60,47 @@ public class ComplexFunction implements complex_function {
 	
 	@Override
 	public function initFromString(String s) { // plus(Times(Plus(x^2, x),x^7),x+5) 
-		String operationSubstring = s.substring(0, s.indexOf("("));
-		Operation op = operationStringToOperation(operationSubstring);
+		s = s.replace(" ", "");
 		
-		String functionsSubstring = s.substring(s.indexOf("(") + 1, s.lastIndexOf(")"));
-		
-		int outerCommaIndex = findOuterComma(functionsSubstring);
-		String leftFunctionString = functionsSubstring.substring(0, outerCommaIndex);
-		String rightFunctionString = functionsSubstring.substring(outerCommaIndex + 1);
-		
-		function left;
-		function right;
-		
-		
-		if(leftFunctionString.contains(",")) {
-			left = initFromString(leftFunctionString);
-		} else {
-			left = new Polynom(leftFunctionString);
-		}
-		
-		if(rightFunctionString.contains(",")) {
-			right = initFromString(rightFunctionString);
-		} else {
-			right = new Polynom(rightFunctionString);
-		}
+		if(s.indexOf(",") != -1) { // complex case
+			String operationSubstring = s.substring(0, s.indexOf("("));
+			Operation op = operationStringToOperation(operationSubstring);
+			
+			String functionsSubstring = s.substring(s.indexOf("(") + 1, s.lastIndexOf(")"));
+			
+			int outerCommaIndex = findOuterComma(functionsSubstring);
+			String leftFunctionString = functionsSubstring.substring(0, outerCommaIndex);
+			String rightFunctionString = functionsSubstring.substring(outerCommaIndex + 1);
+			
+			function left;
+			function right;
 
-		
-		return new ComplexFunction(left, right, op);
+			if(leftFunctionString.contains(",")) {
+				left = initFromString(leftFunctionString);
+			} else {
+				left = new Polynom(leftFunctionString);
+			}
+			
+			if(rightFunctionString.contains(",")) {
+				right = initFromString(rightFunctionString);
+			} else {
+				right = new Polynom(rightFunctionString);
+			}
+
+			
+			return new ComplexFunction(left, right, op);
+		} else { // simple case - s represents a polynom
+			return new Polynom(s);
+		}	
 	}
 	
 	private static Operation operationStringToOperation(String operationString) {
+		if(operationString.equals("div")||operationString.equals("Div")) {
+			operationString = "Divid";
+		}
+		else if(operationString.equals("mul")||operationString.equals("Mul")) {
+			operationString ="Times";
+		}
 		return Operation.valueOf(Character.toUpperCase(operationString.charAt(0)) + operationString.substring(1));
 	}
 	
@@ -105,8 +125,8 @@ public class ComplexFunction implements complex_function {
 	@Override
 	public function copy() {
 		// TODO Auto-generated method stub
-
-		return new ComplexFunction(this.f1.copy(),this.f2.copy(),this.op);
+		function copyF2 = this.f2 == null ? null : this.f2.copy();
+		return new ComplexFunction(this.f1.copy(),copyF2,this.op);
 	}
 	//Plus(x, x^2) +  f1 = left= Plus(x, x^2)  right = Plus(x, x^2) op = +
 	@Override
@@ -183,6 +203,28 @@ public class ComplexFunction implements complex_function {
 			return this.op.name().toLowerCase() + "(" + this.f1.toString() + "," + this.f2.toString() + ")";
 		} else {
 			return this.f1.toString();
+		}
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if(!(o instanceof ComplexFunction)) {
+			return false;
+		}
+		
+		ComplexFunction ocf = (ComplexFunction)o;
+		
+		if(!this.f1.equals(ocf.f1)) {
+			return false;
+		}
+		if(this.op != ocf.op) {
+			return false;
+		}
+		
+		if(this.f2 != null) {
+			return this.f2.equals(ocf.f2);
+		} else {
+			return ocf.f2 == null;
 		}
 	}
 }

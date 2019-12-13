@@ -44,12 +44,13 @@ public class Monom implements function {
 	}
 	
 	public function initFromString(String s) {
+		s = s.replace(" ", "");
 		function m = new Monom(s);
 		return m;
 	}
 	
 	public function copy() {
-		return new Monom(this.toString());
+		return new Monom(get_coefficient(), get_power());
 	}
 
 	/**
@@ -63,6 +64,8 @@ public class Monom implements function {
 		}
 		return new Monom(this.get_coefficient() * this.get_power(), this.get_power() - 1);
 	}
+	
+	
 
 	public double f(double x) {
 		double ans = 0;
@@ -78,8 +81,11 @@ public class Monom implements function {
 		if (s.contains("x")) {
 			if (s.charAt(0) == 'x') {
 				this.set_coefficient(1);
-			} else if (s.substring(0, 2) == "-x") {
+			} else if (s.substring(0, 2).equals("-x")) {
 				this.set_coefficient(-1);
+			} 
+			else if(s.substring(0, 2).equals("+x")) {
+				this.set_coefficient(1);
 			} else {
 				try {
 					this.set_coefficient(Double.parseDouble(s.substring(0, s.indexOf("x"))));
@@ -133,12 +139,31 @@ public class Monom implements function {
 		}
 		return ans;
 	}
+	
+	public boolean equals(Object o) {
+		if(o instanceof Monom) {
+			Monom oMonom = (Monom)o;
+			return compDoubles(get_coefficient(), oMonom.get_coefficient()) && get_power() == oMonom.get_power();
+		} else if (o instanceof Polynom) {
+			Polynom poly = (Polynom)o;
+			Polynom polyCopy = (Polynom)poly.copy();
+			polyCopy.substract(this);
+			return polyCopy.isZero();
+		} else {
+			return false;
+		}
+	}
+	
 	// you may (always) add other methods.
 
 	// ****************** Private Methods and Data *****************
 
 	private void set_coefficient(double a) {
 		this._coefficient = a;
+	}
+	
+	private static boolean compDoubles(double a, double b) {
+		return Math.abs(a - b) <= EPSILON;
 	}
 
 	private void set_power(int p) {
