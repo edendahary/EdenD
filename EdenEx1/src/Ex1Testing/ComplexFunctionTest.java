@@ -88,4 +88,23 @@ class ComplexFunctionTest {
 		System.out.println(cf4);
 		System.out.println(cf5);
 	}
+	@Test
+	void testCopy() {
+		Polynom p = new Polynom("15x^2-7x+5");
+		Monom m = new Monom(2,4);
+		function f1 = new ComplexFunction("mul", p, m);
+		function f2 = f1.copy();
+
+		assertEquals(f1, f2);
+
+	}
+	@Test
+	void testComplexFunctionStringFunctionFunction() {
+		Polynom p1 =new Polynom("2x^3+3x^6");
+		Polynom p2 =new Polynom("3x^6");
+		ComplexFunction cf1= new ComplexFunction("plus",p1,p2);
+		function cf2=cf1.initFromString(cf1.toString());
+		assertEquals(cf1,cf2);
+
+	}
 }

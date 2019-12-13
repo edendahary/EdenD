@@ -245,10 +245,10 @@ public class Polynom implements Polynom_able {
 
 	@Override
 	public Polynom_able derivative() {
+		Polynom_able p = new Polynom();
 		for (int i = 0; i < this.PolArr.size(); i++) {
-			this.PolArr.get(i).derivative();
-		}
-		return this;
+			p.add(PolArr.get(i).derivative());		}
+		return p;
 	}
 
 	@Override
@@ -282,5 +282,4 @@ public class Polynom implements Polynom_able {
 		// TODO Auto-generated method stub
 		return PolArr.iterator();
 	}
-
 }
